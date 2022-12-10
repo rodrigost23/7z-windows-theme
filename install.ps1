@@ -125,4 +125,6 @@ ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource 
 ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,23,0"
 ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,24,0"
 
+Write-Output "Refreshing cache..."
+ie4uinit.exe -ClearIconCache
 Write-Output "Finished."
