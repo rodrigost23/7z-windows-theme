@@ -121,7 +121,7 @@ foreach ($iconPair in $iconMap.GetEnumerator()) {
     foreach ($iconNumber in $iconPair.Value) {
         Write-Progress -activity "Changing icons..." -status "$i of $totalIcons" -PercentComplete (($i / $totalIcons)  * 100)
         Start-Process -Wait -FilePath ResourceHacker.exe -ArgumentList @(
-            "-open", "`"$backupDllPath`"",
+            "-open", "`"$dllPath`"",
             "-save", "`"$dllPath`"",
             "-action", "addoverwrite",
             "-resource", "`"$(Join-Path "icons" $icon)`"",
