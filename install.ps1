@@ -107,11 +107,11 @@ Copy-Item -Path $dllPath -Destination $backupDllPath
 Write-Output "Editing 7-Zip DLL..."
 
 # Number of icons to show progress:
-$totalIcons = 25
+$totalIcons = 26
 $iconMap = @{
     "zip.ico" = @(0,1,2,3,4,5,6,9,10,11,12,13,14,16,19,23);
     "cab.ico" = @(7);
-    "img.ico" = @(8,15,17,18,20,21,22,24)
+    "img.ico" = @(8,15,17,18,20,21,22,24,25)
 }
 
 $i = 1
