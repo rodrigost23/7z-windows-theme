@@ -16,30 +16,28 @@ Param(
 )
 
 # Source: http://blogs.msdn.com/b/jasonn/archive/2013/06/11/8594493.aspx
-function DownloadFile($url, $targetFile)
-{
-   $uri = New-Object "System.Uri" "$url"
-   $request = [System.Net.HttpWebRequest]::Create($uri)
-   $request.set_Timeout(15000) #15 second timeout
-   $response = $request.GetResponse()
-   $totalLength = [System.Math]::Floor($response.get_ContentLength()/1024)
-   $responseStream = $response.GetResponseStream()
-   $targetStream = New-Object -TypeName System.IO.FileStream -ArgumentList $targetFile, Create
-   $buffer = new-object byte[] 10KB
-   $count = $responseStream.Read($buffer,0,$buffer.length)
-   $downloadedBytes = $count
-   while ($count -gt 0)
-   {
-       $targetStream.Write($buffer, 0, $count)
-       $count = $responseStream.Read($buffer,0,$buffer.length)
-       $downloadedBytes = $downloadedBytes + $count
-       Write-Progress -activity "Downloading file '$($url.split('/') | Select -Last 1)'" -status "Downloaded ($([System.Math]::Floor($downloadedBytes/1024))K of $($totalLength)K): " -PercentComplete ((([System.Math]::Floor($downloadedBytes/1024)) / $totalLength)  * 100)
-   }
-   Write-Progress -activity "Finished downloading file '$($url.split('/') | Select -Last 1)'"
-   $targetStream.Flush()
-   $targetStream.Close()
-   $targetStream.Dispose()
-   $responseStream.Dispose()
+function DownloadFile($url, $targetFile) {
+    $uri = New-Object "System.Uri" "$url"
+    $request = [System.Net.HttpWebRequest]::Create($uri)
+    $request.set_Timeout(15000) #15 second timeout
+    $response = $request.GetResponse()
+    $totalLength = [System.Math]::Floor($response.get_ContentLength() / 1024)
+    $responseStream = $response.GetResponseStream()
+    $targetStream = New-Object -TypeName System.IO.FileStream -ArgumentList $targetFile, Create
+    $buffer = new-object byte[] 10KB
+    $count = $responseStream.Read($buffer, 0, $buffer.length)
+    $downloadedBytes = $count
+    while ($count -gt 0) {
+        $targetStream.Write($buffer, 0, $count)
+        $count = $responseStream.Read($buffer, 0, $buffer.length)
+        $downloadedBytes = $downloadedBytes + $count
+        Write-Progress -activity "Downloading file '$($url.split('/') | Select -Last 1)'" -status "Downloaded ($([System.Math]::Floor($downloadedBytes/1024))K of $($totalLength)K): " -PercentComplete ((([System.Math]::Floor($downloadedBytes / 1024)) / $totalLength) * 100)
+    }
+    Write-Progress -activity "Finished downloading file '$($url.split('/') | Select -Last 1)'"
+    $targetStream.Flush()
+    $targetStream.Close()
+    $targetStream.Dispose()
+    $responseStream.Dispose()
 }
 
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
@@ -109,9 +107,9 @@ Write-Output "Editing 7-Zip DLL..."
 # Number of icons to show progress:
 $totalIcons = 26
 $iconMap = @{
-    "zip.ico" = @(0,1,2,3,4,5,6,9,10,11,12,13,14,16,19,23);
+    "zip.ico" = @(0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 19, 23);
     "cab.ico" = @(7);
-    "img.ico" = @(8,15,17,18,20,21,22,24,25)
+    "img.ico" = @(8, 15, 17, 18, 20, 21, 22, 24, 25)
 }
 
 $i = 1
@@ -119,7 +117,7 @@ foreach ($iconPair in $iconMap.GetEnumerator()) {
     $icon = $iconPair.Name
 
     foreach ($iconNumber in $iconPair.Value) {
-        Write-Progress -activity "Changing icons..." -status "$i of $totalIcons" -PercentComplete (($i / $totalIcons)  * 100)
+        Write-Progress -activity "Changing icons..." -status "$i of $totalIcons" -PercentComplete (($i / $totalIcons) * 100)
         Start-Process -Wait -FilePath ResourceHacker.exe -ArgumentList @(
             "-open", "`"$dllPath`"",
             "-save", "`"$dllPath`"",
