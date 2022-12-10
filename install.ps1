@@ -6,6 +6,7 @@ This script extracts Windows icons and installs them as 7-zip icons.
 Path to 7-zip installation.
 #> 
 #Requires -Version 2
+#Requires -RunAsAdministrator
 
 [CmdletBinding()]
 Param(
@@ -43,6 +44,7 @@ function DownloadFile($url, $targetFile)
 
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 $dllPath = Join-Path $7zPath "7z.dll"
+$backupDllPath = Join-Path $7zPath "7z_original.dll"
 
 if (Test-Path -Path $7zPath -PathType Container) {
     if (-not (Test-Path -Path $dllPath -PathType Leaf)) {
@@ -73,6 +75,8 @@ if (-not (Test-CommandExists "$executable")) {
         Remove-Item -Path $zipFilePath -ErrorAction Stop
     }
 
+    Write-Output "Downloading Resource Hacker..."
+
     DownloadFile "http://www.angusj.com/resourcehacker/resource_hacker.zip" $zipFilePath
 
     $zipfile = (New-Object -Com Shell.Application).NameSpace($zipFilePath)
@@ -88,8 +92,7 @@ if (-not (Test-CommandExists "$executable")) {
     Copy-Item -Path (Join-Path "$destinationPath" "$executable") -Destination (Join-Path $localBinDir $executable)
 }
 
-Write-Output "Editing 7-Zip resources..."
-
+Write-Output "Extracting icons from Windows..."
 ResourceHacker.exe -open (Join-Path $env:SystemRoot "system32" "zipfldr.dll") -save "icons\zip.ico" -action extract -log NUL -mask "ICONGROUP,101"
 ResourceHacker.exe -open (Join-Path $env:SystemRoot "SystemResources" "zipfldr.dll.mun") -save "icons\zip.ico" -action extract -log NUL -mask "ICONGROUP,101"
 
@@ -99,31 +102,35 @@ ResourceHacker.exe -open (Join-Path $env:SystemRoot "SystemResources" "cabview.d
 ResourceHacker.exe -open (Join-Path $env:SystemRoot "system32" "imageres.dll") -save "icons\img.ico" -action extract -log NUL -mask "ICONGROUP,5205"
 ResourceHacker.exe -open (Join-Path $env:SystemRoot "SystemResources" "imageres.dll.mun") -save "icons\img.ico" -action extract -log NUL -mask "ICONGROUP,5205"
 
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,0,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,1,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,2,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,3,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,4,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,5,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,6,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\cab.ico -log NUL -mask "ICONGROUP,7,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,8,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,9,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,10,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,11,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,12,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,13,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,14,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,15,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,16,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,17,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,18,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,19,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,20,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,21,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,22,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\zip.ico -log NUL -mask "ICONGROUP,23,0"
-ResourceHacker.exe -open $dllPath -save $dllPath -action addoverwrite -resource icons\img.ico -log NUL -mask "ICONGROUP,24,0"
+Write-Output "Backing up DLL..."
+Copy-Item -Path $dllPath -Destination $backupDllPath
+Write-Output "Editing 7-Zip DLL..."
+
+# Number of icons to show progress:
+$totalIcons = 24
+$iconMap = @{
+    "zip.ico" = @(0,1,2,3,4,5,6,9,10,11,12,13,14,16,19,23);
+    "cab.ico" = @(7);
+    "img.ico" = @(8,15,17,18,20,21,22,24)
+}
+
+$i = 1
+foreach ($iconPair in $iconMap.GetEnumerator()) {
+    $icon = $iconPair.Name
+
+    foreach ($iconNumber in $iconPair.Value) {
+        Write-Progress -activity "Changing icons..." -status "$i of $totalIcons" -PercentComplete (($i / $totalIcons)  * 100)
+        Start-Process -Wait -FilePath ResourceHacker.exe -ArgumentList @(
+            "-open", "`"$backupDllPath`"",
+            "-save", "`"$dllPath`"",
+            "-action", "addoverwrite",
+            "-resource", "`"$(Join-Path "icons" $icon)`"",
+            "-log", "NUL",
+            "-mask", "ICONGROUP,$iconNumber,"
+        )
+    }
+    $i++
+}
 
 Write-Output "Refreshing cache..."
 ie4uinit.exe -ClearIconCache
